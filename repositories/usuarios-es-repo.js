@@ -1,17 +1,16 @@
 
 const { response, request } = require('express');
 
-const { indexDefinition } = require('../models_es/library-definitiones')
+const { indexUsuarioEsDefinition , indexNameUsuario:indexName} = require('../models_es/usuario-definitiones-es')
 
 const { es } = require('../database/config-es')
 
 
 const elasticGet = async(req = request, res = response) => {
     // Verificar si el índice se creó correctamente
-    createIndex();
-    res.json({
-        "elasticsearch":"Nuevo mundo"
-    });
+    const resp =  await createIndex();
+    const {A, B} = resp;
+    res.json({A, B});
 }
 
 
@@ -30,31 +29,28 @@ const elasticBulkPost = async(req = request, res = response) => {
 
 
 
-
 //llenamosdata al index
-const elasticPost = async(req = request, res = response) => {
+const usuarioCreateESRepo = async({estado, google, _id, nombre, correo, rol, password}) => {
 
     try {
-        const { title, author, description, published_date, url} = req.body;
         // Define the document
         const document = {
-            title, 
-            author, 
-            description,
-            published_date, 
-            url
+            estado, 
+            google, 
+            nombre, 
+            correo, 
+            rol,
+            password
         }
-        // Indexar el documento
         const result = await es.index({
-            index: indexName,
+            index: indexName, // Nombre del índice
+            id: _id.toString(), // Usar el ID de MongoDB como ID en Elasticsearch
             body: document
         });
-        
-        res.json({
-            result
-        });
+        return result;
     } catch (error) {
-        console.log(error)
+        console.log('----------------error------------'+error)
+       // console.log(error)
     }
    
 }
@@ -198,18 +194,28 @@ const searchBooksByFilterMustShoul = async (req,resp) => {
 
 
 // Crear el índice 'library'
-const indexName = 'library';
+
 
 const createIndex = async() => {
+    let resp = {};
     try {
-        const response = await es.indices.create({
-            index: indexName,
-            body: indexDefinition
-        });
-        console.log(`Índice '${indexName}' creado exitosamente:`, response);
+        // Verificar si el índice ya existe
+        const existe = await es.indices.exists({ index: indexName });
+        if (!existe) {
+            const response = await es.indices.create({
+                index: indexName,
+                body: indexUsuarioEsDefinition
+            });
+            resp['A']= `Índice '${indexName}' creado exitosamente:`
+            resp['B']= response;
+        }else{
+            resp['A']=`Índice '${indexName}' Existe!`;
+        }
+      
     } catch (error) {
-        console.error(`Error al crear el índice '${indexName}':`, error);
+        console.error(`Error al crear el índice '${indexName}':`);
     }
+    return resp;
 }
 
 
@@ -224,7 +230,8 @@ const createIndex = async() => {
 
 module.exports = {
     elasticGet,
-    elasticPost,
+    createIndex,
+    usuarioCreateESRepo,
     elasticBulkPost,
     searchDocuments,
     searchDystopianBooks,

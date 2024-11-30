@@ -1,8 +1,8 @@
 
 
-
+const indexNameUsuario = 'usuario';
 // Definición del índice y mapeos
-const indexDefinition = {
+const indexUsuarioEsDefinition = {
     settings: {
         number_of_shards: 1,
         number_of_replicas: 1,
@@ -16,23 +16,27 @@ const indexDefinition = {
     },
     mappings: {
         properties: {
-            title: {
+            nombre: {
                 type: 'text',
                 analyzer: 'standard'
             },
-            author: {
+            correo: {
                 type: 'text',
                 analyzer: 'standard'
             },
-            description: {
+            password: {
                 type: 'text',
                 analyzer: 'standard'
             },
-            published_date: {
-                type: 'date'
+            rol: {
+                type: 'text',
+                analyzer: 'standard'
             },
-            published_url: {
-                type: 'keyword'
+            estado: {
+                type: 'boolean',
+            },
+            google: {
+                type: 'boolean',
             }
         }
     }
@@ -40,5 +44,6 @@ const indexDefinition = {
 
 
 module.exports = {
-    indexDefinition
+    indexUsuarioEsDefinition,
+    indexNameUsuario
 }
