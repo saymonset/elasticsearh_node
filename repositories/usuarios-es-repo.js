@@ -5,14 +5,7 @@ const { indexUsuarioEsDefinition , indexNameUsuario:indexName} = require('../mod
 
 const { es } = require('../database/config-es')
 
-
-const elasticGet = async(req = request, res = response) => {
-    // Verificar si el índice se creó correctamente
-    const resp =  await createIndex();
-    const {A, B} = resp;
-    res.json({A, B});
-}
-
+const { getUsuariosEs } = require('../mapper/extract-data-usuarios-es')
 
 //llenamosdata al index
 const elasticBulkPost = async(req = request, res = response) => {
@@ -27,6 +20,24 @@ const elasticBulkPost = async(req = request, res = response) => {
     }
 }
 
+
+
+const usuarioscGet = async() => {
+    // Realizar la consulta para obtener todos los documentos
+    const resp = await es.search({
+       index: indexName, // Reemplaza con el nombre de tu índice
+       body: {
+           query: {
+               match_all: {} // Consulta para obtener todos los documentos
+           }
+       }
+   });
+
+  const usuarios = getUsuariosEs(resp);
+
+
+return usuarios;
+}
 
 
 //llenamosdata al index
@@ -73,7 +84,7 @@ const query = (author)=>{
         const  { author } = req.body;
         console.log(query(author));
         const result = await es.search({
-            index: 'library',
+            index: indexName,
             body: {
                 query: {
                     match: {
@@ -98,7 +109,7 @@ const searchDystopianBooks = async (req, resp) => {
     try {
        
         const response = await es.search({
-            index: 'library',
+            index: indexName,
             body: {
                 query: {
                     multi_match: {
@@ -124,7 +135,7 @@ const searchBooksByAuthorAndDate = async (req,resp) => {
     try {
         const {author, publishDate } = req.body;
         const response = await es.search({
-            index: 'library',
+            index: indexName,
             body: {
                 query: {
                     bool: {
@@ -160,7 +171,7 @@ const searchBooksByFilterMustShoul = async (req,resp) => {
 
       
         const response = await es.search({
-            index: 'library',
+            index: indexName,
             body: {
                 query: {
                     bool: {
@@ -229,7 +240,7 @@ const createIndex = async() => {
 
 
 module.exports = {
-    elasticGet,
+    usuarioscGet,
     createIndex,
     usuarioCreateESRepo,
     elasticBulkPost,
