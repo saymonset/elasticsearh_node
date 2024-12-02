@@ -1,5 +1,5 @@
 
-const getUsuariosEs = (data)=>{
+const getFromDataEsToUsuariosMapperEs = (data)=>{
 
     // Recorrer los hits y extraer la información deseada
 const results = data.hits.hits.map(hit => {
@@ -17,5 +17,5 @@ return results
 }
 
 module.exports = {
-    getUsuariosEs
+    getFromDataEsToUsuariosMapperEs
 }

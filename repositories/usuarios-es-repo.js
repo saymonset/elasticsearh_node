@@ -5,7 +5,7 @@ const { indexUsuarioEsDefinition , indexNameUsuario:indexName} = require('../mod
 
 const { es } = require('../database/config-es')
 
-const { getUsuariosEs } = require('../mapper/extract-data-usuarios-es')
+const { getFromDataEsToUsuariosMapperEs } = require('../mapper/extract-data-usuarios-es')
 
 //llenamosdata al index
 const elasticBulkPost = async(req = request, res = response) => {
@@ -22,7 +22,7 @@ const elasticBulkPost = async(req = request, res = response) => {
 
 
 
-const usuarioscGet = async() => {
+const usuariosESGet = async() => {
     // Realizar la consulta para obtener todos los documentos
     const resp = await es.search({
        index: indexName, // Reemplaza con el nombre de tu índice
@@ -33,11 +33,39 @@ const usuarioscGet = async() => {
        }
    });
 
-  const usuarios = getUsuariosEs(resp);
+  const usuarios = getFromDataEsToUsuariosMapperEs(resp);
 
 
 return usuarios;
 }
+
+const usuarioUpdateESRepo = async({ estado, google, _id, nombre, correo, rol, password }) => {
+    try {
+        // Define the document with the fields you want to update
+        const document = {
+            doc: {
+                estado, 
+                google, 
+                nombre, 
+                correo, 
+                rol,
+                password
+            }
+        };
+        // Use the update method instead of index
+        const result = await es.update({
+            index: indexName, // Nombre del índice
+            id: _id.toString(), // Usar el ID de MongoDB como ID en Elasticsearch
+            body: document
+        });
+
+        return result;
+    } catch (error) {
+        console.log('----------------error------------' + error);
+    }
+};
+
+
 
 
 //llenamosdata al index
@@ -240,9 +268,10 @@ const createIndex = async() => {
 
 
 module.exports = {
-    usuarioscGet,
+    usuariosESGet,
     createIndex,
     usuarioCreateESRepo,
+    usuarioUpdateESRepo,
     elasticBulkPost,
     searchDocuments,
     searchDystopianBooks,
