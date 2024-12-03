@@ -1,7 +1,8 @@
 const { Router } = require('express');
 
 const { usuariosESGet, elasticBulkPost, searchDocuments, searchDystopianBooks,
-    searchBooksByAuthorAndDate, searchBooksByFilterMustShoul } = require('../repositories/usuarios-es-repo')
+    searchBooksByAuthorAndDate, searchBooksByFilterMustShoul,
+    usuarioSearchByFilter } = require('../repositories/usuarios-es-repo')
 
 const routerES = Router();
 

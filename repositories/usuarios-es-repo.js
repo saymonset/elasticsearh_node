@@ -22,18 +22,72 @@ const elasticBulkPost = async(req = request, res = response) => {
 
 
 
-const usuariosESGet = async() => {
-    // Realizar la consulta para obtener todos los documentos
-    const resp = await es.search({
-       index: indexName, // Reemplaza con el nombre de tu índice
-       body: {
-           query: {
-               match_all: {} // Consulta para obtener todos los documentos
-           }
-       }
-   });
+const usuariosESGet = async(req=request) => {
+           let usuarios = {};
+            try {
+                const {
+                    estado,
+                    google,
+                    _id,
+                    nombre,
+                    correo,
+                    rol,
+                } = req.body;
 
-  const usuarios = getFromDataEsToUsuariosMapperEs(resp);
+                const query = {
+                    bool: {
+                        must: [],
+                        filter: []
+                    }
+                };
+
+               
+
+                // Agregar condiciones a la consulta
+                if (estado !== undefined) {
+                    console.log('--------------estado='+estado);
+                    query.bool.filter.push({ term: { estado } });
+                }
+                if (google !== undefined) {
+                    console.log('--------------google='+google);
+                    query.bool.filter.push({ term: { google } });
+                }
+                if (_id) {
+                    console.log('--------------_id='+_id);
+                    query.bool.filter.push({ term: { _id } });
+                }
+                if (nombre) {
+                    console.log('--------------nombre='+nombre);
+                    query.bool.must.push({ match: { nombre } });
+                }
+                if (correo) {
+                    console.log('--------------correo='+correo);
+                    query.bool.must.push({ match: { correo } });
+                }
+                if (rol) {
+                    console.log('--------------rol='+rol);
+                    query.bool.must.push({ match: { rol } });
+                }
+
+                console.log({query})
+            
+
+                const resp = await es.search({
+                    index: indexName,
+                    body: {
+                        query
+                    }
+                });
+
+                usuarios = getFromDataEsToUsuariosMapperEs(resp);
+            } catch (error) {
+                console.error('Error fetching search results:', error);
+                //resp.status(500).json({ error: 'Error fetching search results' });
+            }
+
+
+
+   
 
 
 return usuarios;
@@ -93,6 +147,65 @@ const usuarioCreateESRepo = async({estado, google, _id, nombre, correo, rol, pas
     }
    
 }
+
+
+const usuarioSearchByFilter = async (req, resp) => {
+    try {
+        const {
+            estado,
+            google,
+            _id,
+            nombre,
+            correo,
+            rol,
+            password
+        } = req.body;
+
+        const query = {
+            bool: {
+                must: [],
+                filter: []
+            }
+        };
+
+        // Agregar condiciones a la consulta
+        if (estado !== undefined) {
+            query.bool.filter.push({ term: { estado } });
+        }
+        if (google !== undefined) {
+            query.bool.filter.push({ term: { google } });
+        }
+        if (_id) {
+            query.bool.filter.push({ term: { _id } });
+        }
+        if (nombre) {
+            query.bool.must.push({ match: { nombre } });
+        }
+        if (correo) {
+            query.bool.must.push({ match: { correo } });
+        }
+        if (rol) {
+            query.bool.must.push({ match: { rol } });
+        }
+     
+
+        const response = await es.search({
+            index: indexName,
+            body: {
+                query
+            }
+        });
+
+        resp.json({
+            response: response.hits.hits // Devuelve solo los hits
+        });
+
+        console.log('Search Results:', response.hits.hits);
+    } catch (error) {
+        console.error('Error fetching search results:', error);
+        resp.status(500).json({ error: 'Error fetching search results' });
+    }
+};
 
 
 // Definir la consulta
@@ -272,6 +385,7 @@ module.exports = {
     createIndex,
     usuarioCreateESRepo,
     usuarioUpdateESRepo,
+    usuarioSearchByFilter,
     elasticBulkPost,
     searchDocuments,
     searchDystopianBooks,

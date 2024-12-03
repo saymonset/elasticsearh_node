@@ -15,6 +15,11 @@ const usuariosGet = async(req = request, res = response) => {
     res.json(resp);
 }
 
+
+
+
+
+
 const usuariosPost = async(req, res = response) => {
 
     const usuario = await usuarioCreateServ(req);

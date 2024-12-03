@@ -14,7 +14,7 @@ const { usuarioCreateESRepo ,
     // Si no hay definicion del indice de usuarios en ES, lo creamos;
     createIndex();
     //Obtenemos usuarios en ES
-    const respES = await usuariosESGet();
+    const respES = await usuariosESGet(req);
     return respES;
 }
  const usuarioCreateServ = async(req = request) => {
